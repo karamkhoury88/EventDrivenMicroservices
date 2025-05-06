@@ -1,16 +1,16 @@
-using Common;
+using Common.Services;
 using InventoryService.Data;
 using InventoryService.RabbitMq;
 using RabbitMQ.Client;
 using Scalar.AspNetCore;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 
 builder.AddServiceDefaults();
 
 // Add services to the container.
-builder.Services.AddSingleton<IRabbitMqService, RabbitMqService>();
+builder.Services.RegisterMessageQueueService();
 builder.Services.AddHostedService<RabbitMqConsumerService>();
 
 

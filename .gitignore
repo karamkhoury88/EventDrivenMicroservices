@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/OrderService/orders.db
+/OrderService/orders.db-shm
+/OrderService/orders.db-wal
+/InventoryService/inventory.db
+/InventoryService/inventory.db-shm
+/InventoryService/inventory.db-wal

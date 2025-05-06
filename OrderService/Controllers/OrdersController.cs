@@ -1,5 +1,7 @@
 using Common;
-using Common.Dtos.Events;
+using Common.Events;
+using Common.Events.Dtos;
+using Common.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OrderService.Controllers.Dtos;
@@ -13,9 +15,9 @@ public class OrdersController : ControllerBase
 {
 
     private readonly ILogger<OrdersController> _logger;
-    private readonly IRabbitMqService _rabbitMqService;
+    private readonly IMessageQueueService _rabbitMqService;
     private readonly OrderDbContext _dbContext;
-    public OrdersController(OrderDbContext dbContext, IRabbitMqService rabbitMqService, ILogger<OrdersController> logger)
+    public OrdersController(OrderDbContext dbContext, IMessageQueueService rabbitMqService, ILogger<OrdersController> logger)
     {
         _dbContext = dbContext;
         _logger = logger;
@@ -64,10 +66,8 @@ public class OrdersController : ControllerBase
             ProductId = dto.ProductId
         };
 
-        await _rabbitMqService.PublishMessageToTopicExchange(
-            exchangeName: Exchanges.OrderExchange,
-            routingKey: OrderCreatedEventDto.EventName,
-            eventData: eventData);
+        await new OrderCreatedEvent(eventData, _rabbitMqService).PublishAsync();
+
 
         return Ok();
     }

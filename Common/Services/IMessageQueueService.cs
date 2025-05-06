@@ -1,10 +1,9 @@
-﻿
-using Common.Dtos.Events;
+﻿using Common.Events.Dtos;
 using RabbitMQ.Client.Events;
 
-namespace Common
+namespace Common.Services
 {
-    public interface IRabbitMqService
+    public interface IMessageQueueService
     {
         /// <summary>
         /// Publish message to a topic exchange.

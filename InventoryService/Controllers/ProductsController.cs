@@ -1,5 +1,7 @@
 using Common;
-using Common.Dtos.Events;
+using Common.Events;
+using Common.Events.Dtos;
+using Common.Services;
 using InventoryService.Controllers.Dtos;
 using InventoryService.Data;
 using Microsoft.AspNetCore.Mvc;
@@ -13,9 +15,9 @@ public class ProductsController : ControllerBase
 {
 
     private readonly ILogger<ProductsController> _logger;
-    private readonly IRabbitMqService _rabbitMqService;
+    private readonly IMessageQueueService _rabbitMqService;
     private readonly InventoryDbContext _dbContext;
-    public ProductsController(InventoryDbContext dbContext, ILogger<ProductsController> logger, IRabbitMqService rabbitMqService)
+    public ProductsController(InventoryDbContext dbContext, ILogger<ProductsController> logger, IMessageQueueService rabbitMqService)
     {
         _dbContext = dbContext;
         _logger = logger;
@@ -41,10 +43,7 @@ public class ProductsController : ControllerBase
             Quantity = dbProduct.Quantity
         };
 
-        await _rabbitMqService.PublishMessageToTopicExchange(
-            exchangeName: Exchanges.InventoryExchange, 
-            routingKey: ProductCreatedEventDto.EventName, 
-            eventData: eventData);
+        await new ProductCreatedEvent(eventData, _rabbitMqService).PublishAsync();
 
         return CreatedAtAction(nameof(GetProducts), new { id = dbProduct.Id }, dto);
     }

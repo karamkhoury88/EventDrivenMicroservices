@@ -1,6 +1,8 @@
 ﻿
 using Common;
-using Common.Dtos.Events;
+using Common.Events;
+using Common.Events.Dtos;
+using Common.Services;
 using OrderService.Data;
 using RabbitMQ.Client.Events;
 using System.Text;
@@ -11,10 +13,10 @@ namespace OrderService.RabbitMq
     public class RabbitMqConsumerService : BackgroundService
     {
         private readonly ILogger<RabbitMqConsumerService> _logger;
-        private readonly IRabbitMqService _rabbitMqService;
+        private readonly IMessageQueueService _rabbitMqService;
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public RabbitMqConsumerService(IRabbitMqService rabbitMqService,
+        public RabbitMqConsumerService(IMessageQueueService rabbitMqService,
            IServiceScopeFactory serviceScopeFactory,
             ILogger<RabbitMqConsumerService> logger)
         {
@@ -31,19 +33,8 @@ namespace OrderService.RabbitMq
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            await _rabbitMqService.ConsumeMessageFromTopicExchange(exchangeName: Exchanges.InventoryExchange,
-                queueName: "inventory-product",
-                 routingKey: ProductCreatedEventDto.EventName,
-                 ProcessProductCreatedMessageAsync,
-                 cancellationToken
-                 );
-
-            await _rabbitMqService.ConsumeMessageFromTopicExchange(exchangeName: Exchanges.InventoryExchange,
-               queueName: "inventory-product",
-                routingKey: ProductUpdatedEventDto.EventName,
-                ProcessProductUpdatedMessageAsync,
-                cancellationToken
-                );
+            await new ProductCreatedEvent(null, _rabbitMqService).ConsumeAsync(queueName: "inventory-product", ProcessProductCreatedMessageAsync, cancellationToken);
+            await new ProductCreatedEvent(null, _rabbitMqService).ConsumeAsync(queueName: "inventory-product", ProcessProductUpdatedMessageAsync, cancellationToken);
         }
 
    

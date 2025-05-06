@@ -1,13 +1,13 @@
-﻿using Common.Dtos.Events;
+﻿using Common.Events.Dtos;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 using System.Text.Json;
 
-namespace Common
+namespace Common.Services
 {
-    public class RabbitMqService : IRabbitMqService
+    internal class RabbitMqService : IMessageQueueService
     {
         private readonly ILogger<RabbitMqService> _logger;
         private IConnection? _connection;
@@ -27,7 +27,7 @@ namespace Common
             // Create a topic exchange
             _channel.ExchangeDeclare(exchangeName, ExchangeType.Topic);
 
-            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize<T>(eventData));
+            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(eventData));
 
             // Publish the message to the topic exchange with a routing key
             _channel.BasicPublish(exchangeName, routingKey, basicProperties: null, body);

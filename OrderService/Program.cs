@@ -1,4 +1,4 @@
-using Common;
+using Common.Services;
 using Microsoft.EntityFrameworkCore;
 using OrderService.Data;
 using OrderService.RabbitMq;
@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 // Add services to the container.
-builder.Services.AddSingleton<IRabbitMqService, RabbitMqService>();
+builder.Services.RegisterMessageQueueService();
 builder.Services.AddHostedService<RabbitMqConsumerService>();
 
 // Register the RabbitMQ client
@@ -25,7 +25,7 @@ builder.AddRabbitMQClient("rabbitmq-messaging", configureConnectionFactory: fact
 });
 
 // Get the connection string for the database
-string dbConnectionString = builder.Configuration.GetConnectionString("OrderDb");
+string dbConnectionString = builder.Configuration.GetConnectionString("OrderDb")!;
 
 // Register the DbContext with SQLite provider
 builder.Services.AddSqlite<OrderDbContext>(dbConnectionString);
